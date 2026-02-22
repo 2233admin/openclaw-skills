@@ -1,6 +1,21 @@
 # Initial Setup Guide
 
-First-time configuration for `obsidian-cli` to work with this skill.
+First-time configuration for `obsidian-cli` to work with `kb-steward-companion`.
+
+## About this companion
+
+This is a companion skill for `kb-steward`. While `kb-steward` handles content ingestion and organization, this companion provides query and maintenance utilities.
+
+**Prerequisites**: You should have a vault managed by `kb-steward` with the standard folder structure:
+```
+knowledge/
+├── 10-Projects/
+├── 20-Areas/
+├── 30-Research/
+└── 99-Templates/
+```
+
+If you don't have this structure, use `kb-steward bootstrap --apply` first.
 
 ## Step 1: Install obsidian-cli
 
@@ -29,18 +44,24 @@ obsidian-cli --version
 # Should output: obsidian-cli version v0.2.2 or similar
 ```
 
-## Step 2: Locate your Obsidian vault
+## Step 2: Locate your kb-steward vault
 
-Find the path to your Obsidian vault:
+`kb-steward` typically uses the agent's workspace:
+
+```bash
+# For main agent
+~/workspace-main/knowledge/
+
+# For other agents, check their workspace
+# Example: ~/workspace-claw-config/knowledge/
+```
+
+Or find your vault path:
 
 1. Open Obsidian app
-2. Open the vault you want to use
-3. Open Settings → About → Click "Open folder" (or similar)
+2. Open the vault managed by `kb-steward`
+3. Open Settings → About → Click "Open folder"
 4. Copy the folder path
-
-Example paths:
-- macOS: `~/Documents/Knowledge`
-- Linux: `~/Documents/kb-steward`
 
 ## Step 3: Configure obsidian-cli
 
@@ -50,9 +71,13 @@ Example paths:
 obsidian-cli set-default <vault-name> <vault-path>
 ```
 
-**Example**:
+**Example** (for kb-steward vault):
 ```bash
-obsidian-cli set-default kb-steward ~/Documents/kb-steward
+# For main agent's knowledge base
+obsidian-cli set-default workspace-main ~/workspace-main/knowledge
+
+# For claw-config agent's knowledge base
+obsidian-cli set-default claw-config ~/workspace-claw-config/knowledge
 ```
 
 ### Verify configuration

@@ -1,35 +1,51 @@
 ---
 name: kb-steward-companion
-description: Query and update Obsidian vault tasks via obsidian-cli. Use when: (1) Searching tasks by tags (area/integration, type/research, etc.), (2) Updating project status in frontmatter, (3) Creating/deleting project notes, (4) Browsing tag categories. Prefer for structured frontmatter operations over raw sed/grep.
+description: Query and maintenance utilities for kb-steward managed Obsidian vaults. Use when: (1) Searching tasks by tags in 10-Projects/, (2) Updating project status in frontmatter, (3) Browsing tag taxonomy established by kb-steward, (4) Viewing projects by priority. This is a companion to kb-steward: kb-steward writes/ingests, this companion queries/maintains.
 ---
 
 # KB Steward Companion
 
-Quick task and project management for Obsidian vault using `obsidian-cli`.
+Query and maintenance tools for Obsidian vaults managed by `kb-steward`.
+
+## Relationship to kb-steward
+
+**kb-steward** (primary): Ingests URLs/snippets into knowledge base with proper frontmatter and taxonomy.
+
+**kb-steward-companion** (this skill): Provides utilities to query, update status, and browse the knowledge base.
+
+Use `kb-steward` to add content; use this companion to maintain and query it.
 
 ## Prerequisites
 
-Before using this skill, ensure `obsidian-cli` is installed. If not, follow the initialization steps in `references/SETUP.md`.
+Before using this skill, ensure `obsidian-cli` is installed. If not, follow `references/SETUP.md`.
+
+Your vault should follow the `kb-steward` folder structure:
+- `10-Projects/` - Task notes (queried by this companion)
+- `20-Areas/` - Durable principles
+- `30-Research/` - Analysis and notes
 
 ## Interface
 
 ```bash
-# Query tasks
+# Query tasks in 10-Projects/
 scripts/todo.sh [tag]
 
-# Browse tags (dynamic - generated at runtime)
+# Browse tags (dynamically discovered from vault)
 scripts/tags.sh [category]
 
-# Update status
+# Update project status
 scripts/status.sh <project> <status>
 
-# Priority view
+# View projects by priority
 scripts/prio.sh [P0-P3]
+
+# Delete a note (with backup)
+scripts/delete.sh <note-name> [--no-backup]
 ```
 
 ## Which references to read
 
-- Always read: `references/TAGS.md` (tag taxonomy)
+- Always read: `references/TAGS.md` (tag taxonomy matching kb-steward)
 - If user asks about frontmatter: read `references/FRONTMATTER.md`
 - If user asks about creating projects: read `references/PROJECT_TEMPLATE.md`
 - First-time setup: read `references/SETUP.md`
@@ -40,13 +56,15 @@ scripts/prio.sh [P0-P3]
 - Always show full `obsidian-cli` command before execution
 - Use `~` paths in all documentation
 - Verify vault configuration before operations
+- Do NOT create new folders (use `kb-steward bootstrap` for that)
+- Do NOT ingest new content (use `kb-steward add` for that)
 
-## Tag categories (discovered at runtime)
+## Tag categories (from kb-steward taxonomy)
 
-This skill uses a hierarchical tag system:
+This companion uses the same tag hierarchy that `kb-steward` establishes:
 
-- **area/**: Domain (integration, telegram, memory, model-serving, etc.)
-- **type/**: Task type (research, implementation, creation, done, etc.)
+- **area/**: Domain categories (integration, telegram, memory, model-serving, etc.)
+- **type/**: Task types (research, implementation, creation, done, etc.)
 - **service/**: Specific services (gemini-local, etc.)
 
 Run `scripts/tags.sh` to discover all tags in your vault.
@@ -56,6 +74,7 @@ Run `scripts/tags.sh` to discover all tags in your vault.
 ### Search tasks by tag
 
 ```bash
+# Query 10-Projects/ by area
 scripts/todo.sh area/integration
 scripts/todo.sh type/research
 scripts/todo.sh service/gemini-local
@@ -64,6 +83,7 @@ scripts/todo.sh service/gemini-local
 ### Update project status
 
 ```bash
+# Update status in frontmatter
 scripts/status.sh "Project Name" done
 ```
 
@@ -72,6 +92,7 @@ Valid statuses: `backlog`, `in_progress`, `done`, `archived`
 ### View by priority
 
 ```bash
+# Filter Projects by priority level
 scripts/prio.sh P0
 scripts/prio.sh P1
 ```
@@ -79,13 +100,13 @@ scripts/prio.sh P1
 ## Frontmatter operations (via obsidian-cli)
 
 ```bash
-# Read
+# Read project frontmatter
 obsidian-cli frontmatter "Project Name" --print
 
-# Update
+# Update status field
 obsidian-cli frontmatter "Project Name" --edit --key "status" --value "done"
 
-# Delete
+# Delete field
 obsidian-cli frontmatter "Project Name" --delete --key "due"
 ```
 
@@ -96,7 +117,20 @@ See `references/FRONTMATTER.md` for complete guide.
 The skill automatically discovers your Obsidian vault:
 
 - Checks `obsidian-cli print-default` for current vault
+- Expects `kb-steward` folder structure (10-Projects/, 20-Areas/, 30-Research/)
 - Uses `~/Library/Application Support/obsidian-cli/` or `~/.config/obsidian-cli/` for config
-- Default vault name: stored in preferences
 
 No manual configuration needed if `obsidian-cli` is properly set up.
+
+## Scope boundaries
+
+### This companion DOES:
+- ✅ Query notes in `10-Projects/`
+- ✅ Update frontmatter (status, prio, tags)
+- ✅ Browse tag taxonomy
+- ✅ Provide maintenance utilities
+
+### This companion does NOT:
+- ❌ Ingest new URLs (use `kb-steward add`)
+- ❌ Create folders (use `kb-steward bootstrap`)
+- ❌ Bootstrap new vault (use `kb-steward bootstrap --apply`)

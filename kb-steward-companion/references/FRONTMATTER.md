@@ -101,6 +101,24 @@ grep -l "status: done" ~/path/to/10-Projects/*.md | while read -r file; do
 done
 ```
 
+### Delete notes
+
+```bash
+# Delete with backup
+scripts/delete.sh "Project Name"
+
+# Delete without backup
+scripts/delete.sh "Project Name" --no-backup
+```
+
+The delete script:
+1. Shows note details (title, status)
+2. Asks for confirmation
+3. Creates `.bak.md` backup (unless `--no-backup`)
+4. Deletes the note
+
+**Warning**: Related_doc links in other notes are NOT automatically updated. Manual cleanup may be needed.
+
 ## Troubleshooting
 
 ### "Cannot find note in vault"
