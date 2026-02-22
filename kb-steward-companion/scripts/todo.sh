@@ -1,14 +1,19 @@
 #!/bin/bash
-# Enhanced todo list with tag filtering for Claw 3PO
-# Usage:
-#   ./tools/todo.sh              # Show all pending tasks
-#   ./tools/todo.sh area/integration    # Filter by tag
-#   ./tools/todo.sh type/done          # Filter by tag
-#   ./tools/todo.sh --all              # Show all (including completed)
+# Query tasks by tag
+# Usage: ./scripts/todo.sh [tag] [--all]
 
-VAULT_ROOT="/Users/ruonan/.openclaw/shared/knowledge/claw-config"
+# Discover vault path automatically
+VAULT_ROOT="$(obsidian-cli print-default 2>/dev/null | grep "Default vault path" | cut -d: -f2 | xargs)"
+
+if [[ -z "$VAULT_ROOT" || ! -d "$VAULT_ROOT" ]]; then
+  echo "❌ Error: Cannot find vault path"
+  echo "Run 'obsidian-cli print-default' to verify configuration"
+  echo "See references/SETUP.md for setup instructions"
+  exit 1
+fi
+
 FILTER_TAG="$1"
-SHOW_ALL="${SHOW_ALL:-false}"
+SHOW_ALL="false"
 
 # Parse flags
 if [[ "$1" == "--all" ]]; then
@@ -30,7 +35,7 @@ fi
 echo ""
 
 # Find tasks, optionally filtered by tag
-find "$VAULT_ROOT" -name "*.md" -type f | while read -r file; do
+find "$VAULT_ROOT" -name "*.md" -type f 2>/dev/null | while read -r file; do
   # Check if file has the tag (if filtering)
   if [[ -n "$FILTER_TAG" ]]; then
     if ! grep -q "$FILTER_TAG" "$file" 2>/dev/null; then
@@ -40,9 +45,7 @@ find "$VAULT_ROOT" -name "*.md" -type f | while read -r file; do
 
   # Extract tasks
   grep "$PATTERN" "$file" 2>/dev/null | while read -r line; do
-    # Format: remove path prefix, show relative path
     rel_path="${file#$VAULT_ROOT/}"
-    # Extract checkbox status and task text
     if [[ "$line" =~ ^-\ \[([ x])\]\ (.*) ]]; then
       status="${BASH_REMATCH[1]}"
       text="${BASH_REMATCH[2]}"
