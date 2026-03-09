@@ -1,10 +1,10 @@
-# Directory Structure v2.0 - KB Steward Compatibility
+# Directory Structure v2.0 - Core Specification
 
 ## Overview
 
 As of 2026-03-09, the `10-Projects/` directory has been restructured to support better organization with **status-based layering** and **project aggregation**.
 
-## New Structure (under 10-Projects/)
+## Directory Structure
 
 ```
 10-Projects/
@@ -37,227 +37,99 @@ As of 2026-03-09, the `10-Projects/` directory has been restructured to support 
     └── README.md
 ```
 
-## Compatibility with kb-steward
+## File Naming Conventions
 
-### kb-steward operations
+### Project Folders
+- Use lowercase with hyphens: `clawport-skills`, `baoyu-skills-integration`
+- Avoid spaces and special characters (except emoji in top-level folders)
 
-The new structure is **fully compatible** with kb-steward:
-
-1. **`/kb-steward add --kind project`**:
-   - Creates notes in `10-Projects/🔄 active/` by default
-   - If project folder exists, adds to `tasks/` or `references/`
-   - If creating a new project, creates project folder with `PROJECT.md`
-
-2. **`/kb-steward doctor`**:
-   - Checks for `PROJECT.md` in each project folder
-   - Verifies `tasks/` and `references/` directories
-   - Reports missing README.md files
-
-3. **`/kb-steward bootstrap`**:
-   - Creates missing directories (`🔄 active/`, `✅ completed/`, `💭 backlog/`, `📋 templates/`)
-   - Creates README.md files for each directory
-   - Does NOT overwrite existing files
-
-### Folder detection
-
-kb-steward auto-detects the new structure:
-
-```javascript
-// Pseudo-code for folder detection
-if (folder.startsWith("🔄 active/")) {
-  kind = "project";
-  status = "active";
-} else if (folder.startsWith("✅ completed/")) {
-  kind = "project";
-  status = "done";
-} else if (folder.startsWith("💭 backlog/")) {
-  kind = "project";
-  status = "backlog";
-}
-```
-
-## PROJECT.md frontmatter
-
-### Required fields
-
+### PROJECT.md
+- Every project MUST have a `PROJECT.md` at its root
+- Contains project metadata and task list
+- Example:
 ```yaml
 ---
 title: Project Name
 status: active | done | backlog
 prio: 1-3
-tags:
-  - area/category
-  - source/source
+tags: [area/category, source/source]
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 ---
 ```
 
-### Status field meanings
-
-- **active**: Currently being worked on (in `🔄 active/`)
-- **done**: Completed (in `✅ completed/YYYY-MM/`)
-- **backlog**: Not actively working on (in `💭 backlog/`)
-
-## Task files (in tasks/)
-
-Task files use simplified frontmatter:
-
+### Task Files
+- Located in `tasks/` subdirectory
+- Named with descriptive titles: `cost-dashboard.md`, `format-markdown.md`
+- Frontmatter:
 ```yaml
 ---
 title: Task Name
 status: pending | doing | done
 prio: 1-3
 estimated: 1-2h
-tags:
-  - area/category
+tags: [area/category]
 ---
 ```
 
-## Workflow: Creating a new project
-
-### Using kb-steward
-
-```bash
-/kb-steward add <url> --kind project --title "My Project"
-```
-
-**Behavior**:
-1. Creates `10-Projects/🔄 active/my-project/`
-2. Creates `PROJECT.md` with `status: active`
-3. Ingests the URL content as `references/source-1.md`
-4. Adds to `related_docs` in `PROJECT.md`
-
-### Using kb-steward-tools
-
-```bash
-scripts/create-project.sh "My Project" "area/skills" 1
-```
-
-**Behavior**:
-1. Creates project folder with `tasks/` and `references/`
-2. Creates `PROJECT.md` from template
-3. Creates `tasks/README.md` with instructions
-
-## Workflow: Completing a project
-
-### Manual process
-
-1. Update `PROJECT.md` frontmatter: `status: done`
-2. Add `completed: YYYY-MM-DD` field
-3. Move entire project folder to `✅ completed/YYYY-MM/`
-
-### Automated (future)
-
-```bash
-scripts/complete-project.sh "my-project"
-```
-
-**Behavior**:
-1. Updates `status: done` in `PROJECT.md`
-2. Adds `completed` date
-3. Moves folder to `✅ completed/YYYY-MM/`
-4. Updates monthly README
-
-## Backward compatibility
-
-The new structure is **backward compatible**:
-
-1. **Old paths still work**:
-   - Existing notes in `10-Projects/` root are still valid
-   - kb-steward can read them
-
-2. **Gradual migration**:
-   - Old notes can be migrated gradually
-   - No forced migration required
-
-3. **kb-steward-tools support**:
-   - `scripts/todo.sh` searches all directories by default
-   - Use `--scope` to filter by status
-
-## Bootstrap updates
-
-### New bootstrap assets
-
-kb-steward should create these assets when bootstrapping:
+## Status Flow
 
 ```
-10-Projects/
-├── 🔄 active/
-│   └── README.md                    # "Active Projects"
-├── ✅ completed/
-│   └── README.md                    # "Completed Projects"
-├── 💭 backlog/
-│   └── README.md                    # "Backlog"
-└── 📋 templates/
-    ├── project-template.md
-    ├── task-template.md
-    └── README.md                    # "Templates"
+backlog → active → completed
+   ↑        ↓         ↓
+   └────────┴─────────┘
+     (can move back at any time)
 ```
 
-### README.md content
+### Status Definitions
 
-**🔄 active/README.md**:
-```markdown
-# Active Projects
+- **backlog**: Idea pool, not actively working on
+  - `status: backlog` or file in `💭 backlog/`
 
-Projects currently being worked on.
+- **active**: Currently being worked on
+  - `status: active`
+  - Located in `🔄 active/<project-name>/`
 
-Use `kb-steward add --kind project` to create a new project.
+- **done**: Completed
+  - `status: done`
+  - Moved to `✅ completed/YYYY-MM/<project-name>/`
 
-## Projects
-<!-- Auto-generated list -->
-```
+## Benefits
 
-**✅ completed/YYYY-MM/README.md**:
-```markdown
-# Completed Projects - YYYY-MM
+1. **Clear Status**: Easy to see what's active vs completed
+2. **Project Hierarchy**: Related tasks grouped under project
+3. **Better Navigation**: README.md files for quick overview
+4. **Scalable**: Easy to add many projects without clutter
+5. **Archive Friendly**: Completed projects auto-archived by month
 
-Projects completed in this month.
+## Migration Notes
 
-## Projects
-<!-- Auto-generated list -->
-```
+### Old Structure
 
-## Migration notes
-
-### From v1 (flat) to v2 (layered)
-
-**Old structure**:
 ```
 10-Projects/
 ├── some-project.md
-└── another-project.md
+├── another-project.md
+└── ...
 ```
 
-**New structure**:
+### New Structure
+
 ```
 10-Projects/
 ├── 🔄 active/
 │   ├── some-project/
-│   │   └── PROJECT.md
+│   │   ├── PROJECT.md
+│   │   └── tasks/
 │   └── another-project/
 │       └── PROJECT.md
 └── ✅ completed/
     └── ...
 ```
 
-### Auto-migration (optional)
-
-kb-steward could offer an auto-migration command:
-
-```bash
-/kb-steward migrate-projects --apply
-```
-
-**Behavior**:
-1. Scans `10-Projects/` for standalone `.md` files
-2. Creates project folders in `🔄 active/` or `✅ completed/`
-3. Moves files to `references/`
-4. Creates `PROJECT.md` with metadata
-
 ## References
 
-- **kb-steward-tools**: `../kb-steward-tools/references/DIRECTORY_STRUCTURE_V2.md`
+- **kb-steward integration**: See your skill's specific extension document
+- **kb-steward-tools integration**: See your skill's specific extension document
 - **Project management**: `kb/knowledge/project-management.md`
 - **Frontmatter guide**: `references/FRONTMATTER.md`

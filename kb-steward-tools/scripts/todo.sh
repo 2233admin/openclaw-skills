@@ -3,7 +3,7 @@
 # Usage: ./scripts/todo.sh [tag] [--all]
 
 # Discover vault path automatically
-VAULT_ROOT="$(obsidian-cli print-default 2>/dev/null | grep "Default vault path" | cut -d: -f2 | xargs)"
+VAULT_ROOT="/Users/ruonan/.openclaw/workspace-pensieve/kb"
 
 if [[ -z "$VAULT_ROOT" || ! -d "$VAULT_ROOT" ]]; then
   echo "❌ Error: Cannot find vault path"
